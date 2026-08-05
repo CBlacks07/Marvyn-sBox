@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../prisma.js';
-import { upload } from '../upload.js';
+import { upload, fileUrl } from '../upload.js';
 
 export const settingsAdminRouter = Router();
 
@@ -44,9 +44,9 @@ settingsAdminRouter.put(
     }
 
     const files = req.files || {};
-    if (files.logo?.[0]) data.logoUrl = `/uploads/${files.logo[0].filename}`;
-    if (files.heroImage?.[0]) data.heroImageUrl = `/uploads/${files.heroImage[0].filename}`;
-    if (files.promoImage?.[0]) data.promoImageUrl = `/uploads/${files.promoImage[0].filename}`;
+    if (files.logo?.[0]) data.logoUrl = await fileUrl(files.logo[0]);
+    if (files.heroImage?.[0]) data.heroImageUrl = await fileUrl(files.heroImage[0]);
+    if (files.promoImage?.[0]) data.promoImageUrl = await fileUrl(files.promoImage[0]);
 
     const settings = await prisma.siteSettings.update({ where: { id: 1 }, data });
     res.json(settings);
