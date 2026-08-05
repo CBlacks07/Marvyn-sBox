@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../prisma.js';
-import { upload } from '../upload.js';
+import { upload, fileUrl } from '../upload.js';
 
 export const productsAdminRouter = Router();
 
@@ -53,6 +53,7 @@ productsAdminRouter.post('/', upload.single('image'), async (req, res) => {
   }
 
   const initialStock = Number.isInteger(data.stock) && data.stock > 0 ? data.stock : 0;
+  const imageUrl = await fileUrl(req.file);
 
   const product = await prisma.product.create({
     data: {
@@ -63,7 +64,7 @@ productsAdminRouter.post('/', upload.single('image'), async (req, res) => {
       badge: data.badge,
       stock: initialStock,
       active: data.active ?? true,
-      imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
+      imageUrl,
     },
   });
 
@@ -89,6 +90,7 @@ productsAdminRouter.put('/:id', upload.single('image'), async (req, res) => {
   }
 
   // Le stock ne se modifie qu'via PATCH /:id/stock, pour garder un historique fiable des mouvements.
+  const newImageUrl = req.file ? await fileUrl(req.file) : null;
   const product = await prisma.product.update({
     where: { id },
     data: {
@@ -98,7 +100,7 @@ productsAdminRouter.put('/:id', upload.single('image'), async (req, res) => {
       ...(data.description !== undefined && { description: data.description }),
       ...(data.badge !== undefined && { badge: data.badge }),
       ...(data.active !== undefined && { active: data.active }),
-      ...(req.file && { imageUrl: `/uploads/${req.file.filename}` }),
+      ...(newImageUrl && { imageUrl: newImageUrl }),
     },
   });
   res.json(serialize(product));
