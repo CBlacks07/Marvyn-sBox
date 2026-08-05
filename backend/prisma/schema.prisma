@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  slug     String    @id
+  label    String
+  initial  String
+  order    Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id            Int             @id @default(autoincrement())
+  name          String
+  category      String
+  categoryRef   Category        @relation(fields: [category], references: [slug])
+  price         Decimal         @db.Decimal(10, 2)
+  description   String
+  imageUrl      String?
+  badge         String?
+  stock         Int             @default(0)
+  active        Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  movements     StockMovement[]
+  orderItems    OrderItem[]
+}
+
+model StockMovement {
+  id              Int      @id @default(autoincrement())
+  productId       Int
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  delta           Int
+  resultingStock  Int
+  reason          String?
+  createdAt       DateTime @default(now())
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  customerName  String
+  customerPhone String
+  status        String      @default("pending")
+  total         Decimal     @db.Decimal(10, 2)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name      String
+  price     Decimal  @db.Decimal(10, 2)
+  qty       Int
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model SiteSettings {
+  id                 Int      @id @default(1)
+  logoUrl            String?
+  colorBg            String   @default("#FBC873")
+  colorDark          String   @default("#2E070B")
+  colorAccent        String   @default("#3A0A10")
+  colorAccentHover   String   @default("#55131B")
+
+  adminColorBg       String   @default("#F7EFDC")
+  adminColorSidebar  String   @default("#2E070B")
+  adminColorGold     String   @default("#FBC873")
+  adminColorAccent   String   @default("#3A0A10")
+
+  siteName           String   @default("Mervyn's Box")
+  siteDescription    String   @default("L'univers asiatique, réuni en une boîte. Figurines, manga, snacks et streetwear otaku sélectionnés avec passion.")
+  whatsappNumber     String   @default("")
+
+  heroEyebrow        String   @default("Box mensuelle otaku")
+  heroTitle          String   @default("Ton univers otaku,\nlivré chez toi.")
+  heroSubtitle       String   @default("Figurines, manga, snacks japonais et streetwear : tout l'univers asiatique réuni dans une boîte, chaque mois ou à la carte.")
+  heroImageUrl       String?
+  heroBadgeLabel     String   @default("Nouveau drop")
+
+  promoEyebrow       String   @default("Abonnement")
+  promoTitle         String   @default("La Box mensuelle, ton dose d'otaku régulière")
+  promoText          String   @default("Chaque mois, reçois une sélection surprise de figurines, snacks, goodies et streetwear choisis par notre équipe otaku.")
+  promoImageUrl      String?
+  promoButtonLabel   String   @default("Je m'abonne à la Box")
+
+  newsletterTitle    String   @default("Ne manque aucun drop")
+  newsletterText     String   @default("Inscris-toi à la newsletter pour les nouveautés et offres exclusives.")
+
+  footerShippingText String   @default("Livraison & retours")
+  footerFaqText      String   @default("FAQ")
+  footerContactText  String   @default("Contact")
+  copyrightText      String   @default("© 2026 Mervyn's Box — Tous droits réservés.")
+
+  updatedAt          DateTime @updatedAt
+}

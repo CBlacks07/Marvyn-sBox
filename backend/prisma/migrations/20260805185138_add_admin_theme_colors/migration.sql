@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "SiteSettings" ADD COLUMN     "adminColorAccent" TEXT NOT NULL DEFAULT '#3A0A10',
+ADD COLUMN     "adminColorBg" TEXT NOT NULL DEFAULT '#F7EFDC',
+ADD COLUMN     "adminColorGold" TEXT NOT NULL DEFAULT '#FBC873',
+ADD COLUMN     "adminColorSidebar" TEXT NOT NULL DEFAULT '#2E070B';
