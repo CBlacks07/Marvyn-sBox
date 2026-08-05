@@ -1,0 +1,31 @@
+-- CreateTable
+CREATE TABLE "SiteSettings" (
+    "id" INTEGER NOT NULL DEFAULT 1,
+    "logoUrl" TEXT,
+    "colorBg" TEXT NOT NULL DEFAULT '#FBC873',
+    "colorDark" TEXT NOT NULL DEFAULT '#2E070B',
+    "colorAccent" TEXT NOT NULL DEFAULT '#3A0A10',
+    "colorAccentHover" TEXT NOT NULL DEFAULT '#55131B',
+    "siteName" TEXT NOT NULL DEFAULT 'Mervyn''s Box',
+    "siteDescription" TEXT NOT NULL DEFAULT 'L''univers asiatique, réuni en une boîte. Figurines, manga, snacks et streetwear otaku sélectionnés avec passion.',
+    "heroEyebrow" TEXT NOT NULL DEFAULT 'Box mensuelle otaku',
+    "heroTitle" TEXT NOT NULL DEFAULT 'Ton univers otaku,
+livré chez toi.',
+    "heroSubtitle" TEXT NOT NULL DEFAULT 'Figurines, manga, snacks japonais et streetwear : tout l''univers asiatique réuni dans une boîte, chaque mois ou à la carte.',
+    "heroImageUrl" TEXT,
+    "heroBadgeLabel" TEXT NOT NULL DEFAULT 'Nouveau drop',
+    "promoEyebrow" TEXT NOT NULL DEFAULT 'Abonnement',
+    "promoTitle" TEXT NOT NULL DEFAULT 'La Box mensuelle, ton dose d''otaku régulière',
+    "promoText" TEXT NOT NULL DEFAULT 'Chaque mois, reçois une sélection surprise de figurines, snacks, goodies et streetwear choisis par notre équipe otaku.',
+    "promoImageUrl" TEXT,
+    "promoButtonLabel" TEXT NOT NULL DEFAULT 'Je m''abonne à la Box',
+    "newsletterTitle" TEXT NOT NULL DEFAULT 'Ne manque aucun drop',
+    "newsletterText" TEXT NOT NULL DEFAULT 'Inscris-toi à la newsletter pour les nouveautés et offres exclusives.',
+    "footerShippingText" TEXT NOT NULL DEFAULT 'Livraison & retours',
+    "footerFaqText" TEXT NOT NULL DEFAULT 'FAQ',
+    "footerContactText" TEXT NOT NULL DEFAULT 'Contact',
+    "copyrightText" TEXT NOT NULL DEFAULT '© 2026 Mervyn''s Box — Tous droits réservés.',
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SiteSettings_pkey" PRIMARY KEY ("id")
+);
