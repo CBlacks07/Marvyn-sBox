@@ -578,7 +578,7 @@
           <div class="cart-summary">
             <div class="summary-row"><span>Sous-total</span><strong>${price(subtotalNum)}</strong></div>
             <div class="summary-row"><span>Livraison</span><strong>${shippingNum === 0 ? 'Gratuite' : price(shippingNum)}</strong></div>
-            ${freeShipMissing ? `<p class="summary-note">Ajoute ${freeShipMissing} pour la livraison gratuite !</p>` : ''}
+            ${freeShipMissing ? `<p class="summary-note">Plus que ${freeShipMissing} d'achats pour la livraison gratuite !</p>` : ''}
             <div class="summary-total"><span>Total</span><span>${price(totalNum)}</span></div>
 
             <form id="checkout-form" data-action="submit-checkout">
