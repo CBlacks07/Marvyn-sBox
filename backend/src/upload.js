@@ -6,9 +6,13 @@ import { put } from '@vercel/blob';
 const ACCEPTED = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 // On Vercel the filesystem is read-only/ephemeral, so uploaded images must go
-// to Vercel Blob instead of local disk. Locally (no token configured), we keep
+// to Vercel Blob instead of local disk. Locally (no store connected), we keep
 // writing to backend/uploads/ as before.
-const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
+// A connected Blob store exposes credentials one of two ways: the classic
+// BLOB_READ_WRITE_TOKEN, or (newer projects connected via OIDC) BLOB_STORE_ID
+// paired with the platform-provided VERCEL_OIDC_TOKEN — @vercel/blob's put()
+// picks either up automatically, so we only need to detect that one exists.
+const USE_BLOB = !!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 
 const storage = USE_BLOB
   ? multer.memoryStorage()
