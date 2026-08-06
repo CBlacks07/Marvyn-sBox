@@ -494,7 +494,7 @@
               <button class="btn add-to-cart-btn" style="background:${currentProduct.addBg};color:#FBC873;cursor:${currentProduct.addCursor};" data-action="add-current-to-cart" data-id="${currentProduct.id}">${currentProduct.addLabel === 'Ajouter' ? 'Ajouter au panier' : currentProduct.addLabel}</button>
             </div>
             <div class="perks">
-              <span>Livraison offerte dès 50€ d'achat</span>
+              <span>Livraison offerte dès ${price(FREE_SHIPPING_THRESHOLD)} d'achat</span>
               <span>Retours gratuits sous 30 jours</span>
               <span>Paiement 100% sécurisé</span>
             </div>
