@@ -25,6 +25,10 @@ const IS_VERCEL = !!process.env.VERCEL;
 export const app = express();
 const PROJECT_ROOT = path.resolve('..');
 
+// Vercel (and most hosts) sit behind a reverse proxy that sets X-Forwarded-For;
+// without this, express-rate-limit can't reliably identify client IPs.
+if (IS_VERCEL) app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json());
 
