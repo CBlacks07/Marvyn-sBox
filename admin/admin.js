@@ -159,6 +159,7 @@
     categories: 'Catégories',
     movements: 'Mouvements de stock',
     settings: 'Contenu du site',
+    newsletter: 'Newsletter',
   };
 
   function onRoute() {
@@ -177,6 +178,7 @@
     else if (state.route === 'categories') renderCategories();
     else if (state.route === 'movements') renderMovements();
     else if (state.route === 'settings') renderSettings();
+    else if (state.route === 'newsletter') renderNewsletter();
   }
   window.addEventListener('hashchange', onRoute);
 
@@ -1051,6 +1053,90 @@
         }
       }
     });
+  }
+
+  // ==================================================================
+  // NEWSLETTER
+  // ==================================================================
+  let newsletterSubscribers = [];
+
+  async function renderNewsletter() {
+    topbarActions.innerHTML = `<button class="btn btn-primary" id="export-newsletter-btn">Exporter en CSV</button>`;
+    contentEl.innerHTML = `<p class="empty-note">Chargement…</p>`;
+
+    try {
+      const res = await apiFetch('/api/admin/newsletter');
+      if (!res.ok) throw new Error();
+      newsletterSubscribers = await res.json();
+    } catch (e) {
+      if (e.message === 'unauthorized') return;
+      contentEl.innerHTML = `<p class="empty-note">Impossible de charger les abonnés.</p>`;
+      return;
+    }
+
+    document.getElementById('export-newsletter-btn').addEventListener('click', exportNewsletterCsv);
+
+    contentEl.innerHTML = `
+      <div class="toolbar">
+        <span class="empty-note">${newsletterSubscribers.length} abonné(s)</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Email</th><th>Inscrit le</th><th></th></tr></thead>
+          <tbody id="newsletter-tbody">
+            ${newsletterSubscribers.length === 0
+              ? `<tr><td colspan="3" style="text-align:center;padding:40px;"><span class="empty-note">Aucun abonné pour l'instant.</span></td></tr>`
+              : newsletterSubscribers.map(newsletterRow).join('')
+            }
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    document.getElementById('newsletter-tbody').addEventListener('click', onNewsletterTableClick);
+  }
+
+  function newsletterRow(s) {
+    return `
+      <tr data-row-id="${s.id}">
+        <td class="product-name-cell">${esc(s.email)}</td>
+        <td class="muted">${formatDate(s.createdAt)}</td>
+        <td><div class="row-actions"><button class="icon-btn danger" data-action="delete-subscriber" data-id="${s.id}" title="Retirer">${ICON_TRASH}</button></div></td>
+      </tr>
+    `;
+  }
+
+  async function onNewsletterTableClick(e) {
+    const btn = e.target.closest('button[data-action="delete-subscriber"]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const sub = newsletterSubscribers.find((s) => s.id === id);
+    if (!sub) return;
+    const ok = await askConfirm(`Retirer « ${sub.email} » de la newsletter ?`);
+    if (!ok) return;
+    try {
+      const res = await apiFetch(`/api/admin/newsletter/${id}`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 204) throw new Error();
+      newsletterSubscribers = newsletterSubscribers.filter((s) => s.id !== id);
+      renderNewsletter();
+      toast('Abonné retiré.', 'success');
+    } catch (e2) {
+      if (e2.message !== 'unauthorized') toast('Suppression impossible.', 'error');
+    }
+  }
+
+  function exportNewsletterCsv() {
+    const rows = [['email', 'inscrit_le'], ...newsletterSubscribers.map((s) => [s.email, s.createdAt])];
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'newsletter-abonnes.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   // ==================================================================
