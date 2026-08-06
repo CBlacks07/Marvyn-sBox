@@ -199,6 +199,30 @@
     return lines.join('\n');
   }
 
+  async function submitNewsletter(form) {
+    const input = form.querySelector('input[type="email"]');
+    const email = input ? input.value.trim() : '';
+    if (!email) return;
+
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error();
+      form.reset();
+      showNotice('Merci ! Tu es inscrit·e à la newsletter.');
+    } catch {
+      showNotice("Impossible de t'inscrire pour le moment, réessaie plus tard.");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function submitCheckout() {
     const { cartItems, totalNum } = computeCartItems();
     if (cartItems.length === 0) return;
@@ -683,7 +707,7 @@
       location.hash = '#/shop';
       render();
     } else if (el.dataset.action === 'submit-newsletter') {
-      el.reset();
+      submitNewsletter(el);
     } else if (el.dataset.action === 'submit-checkout') {
       submitCheckout();
     }

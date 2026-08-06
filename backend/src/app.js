@@ -15,6 +15,8 @@ import { settingsPublicRouter } from './routes/settingsPublic.js';
 import { settingsAdminRouter } from './routes/settingsAdmin.js';
 import { ordersPublicRouter } from './routes/ordersPublic.js';
 import { ordersAdminRouter } from './routes/ordersAdmin.js';
+import { newsletterPublicRouter } from './routes/newsletterPublic.js';
+import { newsletterAdminRouter } from './routes/newsletterAdmin.js';
 import { requireAdmin } from './middleware/auth.js';
 
 // On Vercel, static files (public site, /admin, uploaded local files) are served
@@ -42,11 +44,15 @@ app.use('/api/admin/login', loginLimiter);
 const orderLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30 });
 app.use('/api/orders', orderLimiter);
 
+const newsletterLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20 });
+app.use('/api/newsletter', newsletterLimiter);
+
 app.use('/api/admin', authRouter);
 app.use('/api/products', productsPublicRouter);
 app.use('/api/categories', categoriesPublicRouter);
 app.use('/api/settings', settingsPublicRouter);
 app.use('/api/orders', ordersPublicRouter);
+app.use('/api/newsletter', newsletterPublicRouter);
 
 app.use('/api/admin/products', requireAdmin, productsAdminRouter);
 app.use('/api/admin/categories', requireAdmin, categoriesAdminRouter);
@@ -54,6 +60,7 @@ app.use('/api/admin/stock-movements', requireAdmin, stockMovementsRouter);
 app.use('/api/admin/stats', requireAdmin, statsAdminRouter);
 app.use('/api/admin/settings', requireAdmin, settingsAdminRouter);
 app.use('/api/admin/orders', requireAdmin, ordersAdminRouter);
+app.use('/api/admin/newsletter', requireAdmin, newsletterAdminRouter);
 
 if (!IS_VERCEL) {
   app.use('/admin', express.static(path.join(PROJECT_ROOT, 'admin')));
