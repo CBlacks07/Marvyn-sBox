@@ -10,11 +10,14 @@ datasource db {
 }
 
 model Category {
-  slug     String    @id
-  label    String
-  initial  String
-  order    Int       @default(0)
-  products Product[]
+  slug       String     @id
+  label      String
+  initial    String
+  order      Int        @default(0)
+  parentSlug String?
+  parent     Category?  @relation("CategoryHierarchy", fields: [parentSlug], references: [slug], onDelete: SetNull)
+  children   Category[] @relation("CategoryHierarchy")
+  products   Product[]
 }
 
 model Product {

@@ -465,7 +465,14 @@
     dropzonePlaceholder.hidden = false;
 
     document.getElementById('f-category').innerHTML = state.categories
-      .map((c) => `<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
+      .filter((c) => !c.parentSlug)
+      .map((top) => {
+        const children = state.categories.filter((c) => c.parentSlug === top.slug);
+        const topOption = `<option value="${esc(top.slug)}">${esc(top.label)}</option>`;
+        if (!children.length) return topOption;
+        const childOptions = children.map((c) => `<option value="${esc(c.slug)}">— ${esc(c.label)}</option>`).join('');
+        return `<optgroup label="${esc(top.label)}">${topOption}${childOptions}</optgroup>`;
+      }).join('');
 
     document.getElementById('f-name').value = product ? product.name : '';
     document.getElementById('f-category').value = product ? product.category : (state.categories[0]?.slug || '');
@@ -696,15 +703,24 @@
     topbarActions.innerHTML = `<button class="btn btn-primary" id="add-category-btn">+ Ajouter une catégorie</button>`;
     document.getElementById('add-category-btn').addEventListener('click', () => openCategoryModal(null));
 
+    // Parents first (in order), each immediately followed by its own children (in order).
+    const parents = state.categories.filter((c) => !c.parentSlug);
+    const orderedRows = [];
+    parents.forEach((p) => {
+      orderedRows.push(p);
+      state.categories.filter((c) => c.parentSlug === p.slug).forEach((child) => orderedRows.push(child));
+    });
+
     contentEl.innerHTML = `
       <div class="table-wrap">
-        ${state.categories.map((c) => {
+        ${orderedRows.map((c) => {
           const count = state.products.filter((p) => p.category === c.slug).length;
           return `
-            <div class="category-row">
+            <div class="category-row ${c.parentSlug ? 'is-child' : ''}">
+              ${c.parentSlug ? '<span class="child-arrow">↳</span>' : ''}
               <div class="cat-badge">${esc(c.initial)}</div>
               <span class="label">${esc(c.label)}</span>
-              <span class="count">${count} article(s)</span>
+              <span class="count">${count} article(s)${c.childCount ? ` · ${c.childCount} sous-catégorie(s)` : ''}</span>
               <div class="row-actions">
                 <button class="icon-btn" data-action="edit-cat" data-slug="${esc(c.slug)}" title="Modifier">${ICON_EDIT}</button>
                 <button class="icon-btn danger" data-action="delete-cat" data-slug="${esc(c.slug)}" title="Supprimer">${ICON_TRASH}</button>
@@ -729,6 +745,11 @@
     const count = state.products.filter((p) => p.category === slug).length;
     if (count > 0) {
       toast(`Impossible : ${count} article(s) utilisent encore « ${cat.label} ».`, 'error');
+      return;
+    }
+    const childCount = state.categories.filter((c) => c.parentSlug === slug).length;
+    if (childCount > 0) {
+      toast(`Impossible : ${childCount} sous-catégorie(s) dépendent encore de « ${cat.label} ».`, 'error');
       return;
     }
     const ok = await askConfirm(`Supprimer la catégorie « ${cat.label} » ?`);
@@ -764,6 +785,18 @@
     slugHint.hidden = !category;
     document.getElementById('c-initial').value = category ? category.initial : '';
 
+    // Only top-level categories can be picked as a parent (2 levels max), and a
+    // category can't be its own parent, nor can a category that already has
+    // children of its own become someone else's sub-category.
+    const hasChildren = category && state.categories.some((c) => c.parentSlug === category.slug);
+    const parentOptions = state.categories.filter((c) => !c.parentSlug && c.slug !== editingSlug);
+    const parentSelect = document.getElementById('c-parent');
+    parentSelect.innerHTML = `<option value="">Aucune (catégorie principale)</option>`
+      + parentOptions.map((c) => `<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
+    parentSelect.value = category?.parentSlug || '';
+    parentSelect.disabled = !!hasChildren;
+    parentSelect.title = hasChildren ? 'Cette catégorie a déjà des sous-catégories, elle ne peut pas devenir elle-même une sous-catégorie.' : '';
+
     categoryModal.hidden = false;
   }
   function closeCategoryModal() { categoryModal.hidden = true; editingSlug = null; }
@@ -777,6 +810,7 @@
     const payload = {
       label: document.getElementById('c-label').value.trim(),
       initial: document.getElementById('c-initial').value.trim(),
+      parentSlug: document.getElementById('c-parent').value || null,
     };
     if (!editingSlug) payload.slug = slugInput.value.trim();
 

@@ -412,7 +412,12 @@ main { animation: fadeIn 0.35s ease both; }
 .sidebar-card { background: #FFF3DC; border-radius: 18px; padding: 22px; margin-bottom: 20px; }
 .sidebar-title { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 14px; }
 .sidebar-cats { display: flex; flex-direction: column; gap: 6px; }
-.sidebar-cats span { cursor: pointer; padding: 8px 10px; border-radius: 10px; font-size: 14px; }
+.sidebar-cat-group { display: flex; flex-direction: column; gap: 4px; }
+.sidebar-cats span { cursor: pointer; padding: 8px 10px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--accent); transition: background 0.15s, color 0.15s; }
+.sidebar-cats span:hover { background: rgba(58,10,16,0.08); }
+.sidebar-cats span.active { font-weight: 700; background: var(--accent); color: var(--bg); }
+.sidebar-subcats { display: flex; flex-direction: column; gap: 4px; margin: 2px 0 2px 14px; padding-left: 12px; border-left: 2px solid rgba(58,10,16,0.12); }
+.sidebar-subcats span { font-size: 13px; padding: 6px 10px; }
 .sidebar-select {
   width: 100%; border: 2px solid var(--accent); background: var(--bg); border-radius: 10px;
   padding: 10px; font-size: 13px; color: var(--dark); outline: none;
