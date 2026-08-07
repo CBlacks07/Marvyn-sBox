@@ -417,17 +417,17 @@
           </div>
         </section>
 
-        <div class="category-grid">${categoryCards}</div>
+        <div class="category-grid reveal">${categoryCards}</div>
 
-        <section class="section">
+        <section class="section reveal">
           <div class="section-head">
             <h2>Les plus demandés</h2>
             <a data-action="go-shop-all">Voir tout →</a>
           </div>
-          <div class="product-grid">${featured.map((p) => productCard(p)).join('')}</div>
+          <div class="product-grid featured-grid" id="featured-carousel">${featured.map((p) => productCard(p)).join('')}</div>
         </section>
 
-        <section class="promo-band">
+        <section class="promo-band reveal">
           <div class="promo-copy">
             <span class="eyebrow">${esc(s.promoEyebrow)}</span>
             <h2>${esc(s.promoTitle)}</h2>
@@ -439,7 +439,7 @@
           </div>
         </section>
 
-        <section id="newsletter" class="newsletter">
+        <section id="newsletter" class="newsletter reveal">
           <h2>${esc(s.newsletterTitle)}</h2>
           <p>${esc(s.newsletterText)}</p>
           <form class="newsletter-form" data-action="submit-newsletter">
@@ -508,16 +508,17 @@
 
     const sameCategory = allProducts.filter((p) => p.category === currentProduct.category && p.id !== currentProduct.id);
     let related;
-    let relatedIsCarousel;
     if (sameCategory.length >= 4) {
       // Enough same-category items to make scrolling worthwhile.
       related = sameCategory.slice(0, 16);
-      relatedIsCarousel = true;
     } else {
       const otherCategory = allProducts.filter((p) => p.category !== currentProduct.category && p.id !== currentProduct.id);
       related = [...sameCategory, ...otherCategory].slice(0, 4);
-      relatedIsCarousel = false;
     }
+    // Related items are always laid out as a horizontal row (never a wrapping
+    // grid) so 1-2 cards read as a row, not an oversized centered block.
+    // Nav arrows only earn their keep once there's more than fits on screen.
+    const showCarouselNav = related.length > 4;
 
     return `
       <main class="product-main">
@@ -550,11 +551,11 @@
         </div>
 
         ${related.length > 0 ? `
-          <div class="related-block">
+          <div class="related-block reveal">
             <h2>Tu aimeras aussi</h2>
             <div class="carousel-wrap">
-              ${relatedIsCarousel ? `<button class="carousel-nav prev" data-action="carousel-scroll" data-dir="-1" aria-label="Précédent">${ICON_CHEVRON_LEFT}</button>` : ''}
-              <div class="related-grid ${relatedIsCarousel ? 'is-carousel' : ''}" id="related-carousel">
+              ${showCarouselNav ? `<button class="carousel-nav prev" data-action="carousel-scroll" data-dir="-1" aria-label="Précédent">${ICON_CHEVRON_LEFT}</button>` : ''}
+              <div class="related-grid is-carousel" id="related-carousel">
                 ${related.map((p) => `
                   <div class="related-card" data-action="open-product" data-id="${p.id}">
                     <img src="${esc(p.imageSrc)}" alt="${esc(p.name)}" />
@@ -565,7 +566,7 @@
                   </div>
                 `).join('')}
               </div>
-              ${relatedIsCarousel ? `<button class="carousel-nav next" data-action="carousel-scroll" data-dir="1" aria-label="Suivant">${ICON_CHEVRON_RIGHT}</button>` : ''}
+              ${showCarouselNav ? `<button class="carousel-nav next" data-action="carousel-scroll" data-dir="1" aria-label="Suivant">${ICON_CHEVRON_RIGHT}</button>` : ''}
             </div>
           </div>
         ` : ''}
@@ -659,6 +660,7 @@
     else body = renderHome();
 
     app.innerHTML = renderHeader() + body + renderFooter();
+    setupScrollReveal();
   }
 
   // ---- Event delegation ----
@@ -762,6 +764,42 @@
     else header.classList.remove('header-hidden');
     lastScrollY = currentY;
   }, { passive: true });
+
+  // ---- Scroll-triggered section reveal (fade-up once, on entering view) ----
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const revealObserver = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 }) : null;
+  function setupScrollReveal() {
+    if (!revealObserver) { document.querySelectorAll('.reveal').forEach((el) => el.classList.add('in-view')); return; }
+    document.querySelectorAll('.reveal:not(.in-view)').forEach((el) => revealObserver.observe(el));
+  }
+
+  // ---- "Les plus demandés" — gentle auto-scroll, mobile only ----
+  let featuredAutoPaused = false;
+  let featuredPauseTimer = null;
+  document.addEventListener('pointerdown', (e) => {
+    if (!e.target.closest('#featured-carousel')) return;
+    featuredAutoPaused = true;
+    clearTimeout(featuredPauseTimer);
+    featuredPauseTimer = setTimeout(() => { featuredAutoPaused = false; }, 6000);
+  });
+  if (!prefersReducedMotion) {
+    setInterval(() => {
+      if (window.innerWidth > 768 || featuredAutoPaused) return;
+      const track = document.getElementById('featured-carousel');
+      const card = track?.querySelector('.product-card');
+      if (!track || !card) return;
+      const step = card.getBoundingClientRect().width + 16;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      track.scrollTo({ left: atEnd ? 0 : track.scrollLeft + step, behavior: 'smooth' });
+    }, 3200);
+  }
 
   // ---- Boot ----
   Object.assign(state, parseHash());
