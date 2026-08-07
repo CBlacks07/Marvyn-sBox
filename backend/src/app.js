@@ -17,7 +17,6 @@ import { ordersPublicRouter } from './routes/ordersPublic.js';
 import { ordersAdminRouter } from './routes/ordersAdmin.js';
 import { newsletterPublicRouter } from './routes/newsletterPublic.js';
 import { newsletterAdminRouter } from './routes/newsletterAdmin.js';
-import { migrateOnceRouter } from './routes/migrateOnce.js';
 import { requireAdmin } from './middleware/auth.js';
 
 // On Vercel, static files (public site, /admin, uploaded local files) are served
@@ -62,7 +61,6 @@ app.use('/api/admin/stats', requireAdmin, statsAdminRouter);
 app.use('/api/admin/settings', requireAdmin, settingsAdminRouter);
 app.use('/api/admin/orders', requireAdmin, ordersAdminRouter);
 app.use('/api/admin/newsletter', requireAdmin, newsletterAdminRouter);
-app.use('/api/admin/_migrate-once', requireAdmin, migrateOnceRouter); // TEMPORARY, see routes/migrateOnce.js
 
 if (!IS_VERCEL) {
   app.use('/admin', express.static(path.join(PROJECT_ROOT, 'admin')));
