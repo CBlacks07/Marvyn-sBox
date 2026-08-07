@@ -27,6 +27,34 @@ a:hover { color: #8a2a1e; }
 button { font-family: inherit; }
 svg { display: block; }
 
+/* ---- Animations ---- */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.28); } 65% { transform: scale(0.92); } 100% { transform: scale(1); } }
+@keyframes badgePop { from { opacity: 0; transform: rotate(-4deg) scale(0.6); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Staggered entrance delays for grid items (product/category/related cards) */
+.category-grid > *:nth-child(1), .product-grid > *:nth-child(1), .related-grid > *:nth-child(1), .cart-items > *:nth-child(1) { animation-delay: .03s; }
+.category-grid > *:nth-child(2), .product-grid > *:nth-child(2), .related-grid > *:nth-child(2), .cart-items > *:nth-child(2) { animation-delay: .08s; }
+.category-grid > *:nth-child(3), .product-grid > *:nth-child(3), .related-grid > *:nth-child(3), .cart-items > *:nth-child(3) { animation-delay: .13s; }
+.category-grid > *:nth-child(4), .product-grid > *:nth-child(4), .related-grid > *:nth-child(4), .cart-items > *:nth-child(4) { animation-delay: .18s; }
+.category-grid > *:nth-child(5), .product-grid > *:nth-child(5), .related-grid > *:nth-child(5) { animation-delay: .23s; }
+.category-grid > *:nth-child(6), .product-grid > *:nth-child(6), .related-grid > *:nth-child(6) { animation-delay: .28s; }
+.category-grid > *:nth-child(7), .product-grid > *:nth-child(7) { animation-delay: .33s; }
+.category-grid > *:nth-child(8), .product-grid > *:nth-child(8) { animation-delay: .38s; }
+.category-grid > *:nth-child(n+9), .product-grid > *:nth-child(n+9) { animation-delay: .42s; }
+
 /* ---- Header ---- */
 .site-header {
   position: sticky;
@@ -90,10 +118,12 @@ svg { display: block; }
   border-radius: 999px;
   font-family: 'Baloo 2', sans-serif;
   font-weight: 700;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
+.btn:active:not(:disabled) { transform: scale(0.95); }
 
 .btn-dark { background: var(--accent); color: var(--bg); }
-.btn-dark:hover { background: var(--accent-hover); }
+.btn-dark:hover { background: var(--accent-hover); box-shadow: 0 6px 16px rgba(58,10,16,0.25); }
 
 .btn-outline {
   background: transparent;
@@ -116,6 +146,7 @@ svg { display: block; }
   font-size: 19px;
   flex-shrink: 0;
 }
+.cart-btn.bump { animation: bump 0.4s ease; }
 
 .cart-count {
   position: absolute;
@@ -160,6 +191,7 @@ svg { display: block; }
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
+  animation: slideDown 0.35s ease both;
 }
 
 .notice-banner {
@@ -169,7 +201,10 @@ svg { display: block; }
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
+  animation: slideDown 0.35s ease both;
 }
+
+main { animation: fadeIn 0.35s ease both; }
 
 /* ---- Hero ---- */
 .hero {
@@ -207,6 +242,7 @@ svg { display: block; }
   padding: 8px 16px;
   border-radius: 999px;
   margin-bottom: 22px;
+  animation: fadeInUp 0.5s ease both;
 }
 
 .hero-copy h1 {
@@ -214,6 +250,7 @@ svg { display: block; }
   font-size: 58px;
   line-height: 1.05;
   margin: 0 0 22px;
+  animation: fadeInUp 0.6s ease both .08s;
 }
 
 .hero-copy p {
@@ -222,13 +259,14 @@ svg { display: block; }
   color: var(--accent);
   max-width: 480px;
   margin: 0 0 34px;
+  animation: fadeInUp 0.6s ease both .16s;
 }
 
-.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; animation: fadeInUp 0.6s ease both .24s; }
 .hero-actions .btn { padding: 16px 30px; font-size: 16px; }
 .hero-actions .btn-outline { padding: 14px 28px; }
 
-.hero-media { flex: 1; min-width: 320px; position: relative; display: flex; justify-content: center; z-index: 1; }
+.hero-media { flex: 1; min-width: 320px; position: relative; display: flex; justify-content: center; z-index: 1; animation: popIn 0.6s ease both .2s; }
 .hero-media-inner { position: relative; width: 100%; max-width: 440px; }
 .hero-img { width: 100%; height: 440px; object-fit: cover; border-radius: 28px; display: block; }
 
@@ -239,6 +277,7 @@ svg { display: block; }
   padding: 10px 18px; border-radius: 10px;
   transform: rotate(-8deg);
   box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  animation: popIn 0.4s ease both .5s;
 }
 
 /* ---- Category grid (home) ---- */
@@ -256,6 +295,7 @@ svg { display: block; }
   text-align: center;
   cursor: pointer;
   transition: transform 0.15s;
+  animation: fadeInUp 0.5s ease both;
 }
 .category-card:hover { transform: translateY(-4px); }
 
@@ -294,6 +334,7 @@ svg { display: block; }
   flex-direction: column;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
+  animation: fadeInUp 0.5s ease both;
 }
 .product-card:hover {
   transform: translateY(-3px);
@@ -307,7 +348,8 @@ svg { display: block; }
 .product-badge-tag {
   position: absolute; top: 12px; left: 12px;
   color: #FFF3DC; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 12px;
-  padding: 6px 12px; border-radius: 8px; transform: rotate(-4deg);
+  padding: 6px 12px; border-radius: 8px;
+  animation: badgePop 0.35s ease both 0.2s;
 }
 
 .product-body { padding: 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
@@ -364,7 +406,7 @@ svg { display: block; }
 .product-main { padding: 50px 60px 90px; }
 .back-link { cursor: pointer; font-weight: 600; color: var(--accent); display: inline-block; margin-bottom: 28px; }
 .product-detail { display: flex; gap: 56px; flex-wrap: wrap; }
-.product-gallery { flex: 1; min-width: 300px; max-width: 480px; position: relative; cursor: zoom-in; }
+.product-gallery { flex: 1; min-width: 300px; max-width: 480px; position: relative; cursor: zoom-in; animation: fadeInUp 0.5s ease both; }
 .product-gallery img { width: 100%; height: 420px; object-fit: contain; border-radius: 24px; display: block; background: #EADFC0; }
 .zoom-hint {
   position: absolute; bottom: 14px; right: 14px;
@@ -380,10 +422,12 @@ svg { display: block; }
   position: fixed; inset: 0; background: rgba(20,5,5,0.92); z-index: 1000;
   display: flex; align-items: center; justify-content: center; padding: 40px;
   overflow: auto; cursor: zoom-out;
+  animation: fadeIn 0.2s ease both;
 }
 .lightbox-img {
   max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 10px;
   cursor: zoom-in; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: popIn 0.25s ease both;
 }
 .lightbox-img.zoomed { max-width: none; max-height: none; cursor: zoom-out; }
 .lightbox-close {
@@ -391,9 +435,10 @@ svg { display: block; }
   border: none; width: 40px; height: 40px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; z-index: 1001;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
-.lightbox-close:hover { background: rgba(255,255,255,0.28); }
-.product-info { flex: 1; min-width: 300px; }
+.lightbox-close:hover { background: rgba(255,255,255,0.28); transform: scale(1.08); }
+.product-info { flex: 1; min-width: 300px; animation: fadeInUp 0.5s ease both .1s; }
 .product-info .product-cat { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; }
 .product-info h1 { font-weight: 800; font-size: 32px; margin: 10px 0 14px; }
 .product-info .price { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 26px; color: var(--accent); margin-bottom: 8px; }
@@ -408,9 +453,42 @@ svg { display: block; }
 .perks { display: flex; flex-direction: column; gap: 10px; background: #FFF3DC; border-radius: 16px; padding: 18px 20px; font-size: 14px; color: var(--accent); }
 
 .related-block { margin-top: 70px; }
-.related-block h2 { font-weight: 800; font-size: 26px; margin: 0 0 24px; }
+.related-block h2 { font-weight: 800; font-size: 26px; margin: 0 0 24px; animation: fadeInUp 0.5s ease both; }
+
 .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 260px)); justify-content: center; gap: 22px; }
-.related-card { background: #FFF3DC; border-radius: 20px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+
+/* Carousel mode: horizontal scroll-snap row instead of a wrapping grid, used
+   when there are enough same-category products to make scrolling worthwhile. */
+.carousel-wrap { position: relative; display: flex; align-items: center; gap: 10px; }
+.related-grid.is-carousel {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  gap: 18px;
+  padding: 4px 4px 14px;
+  justify-content: flex-start;
+  scrollbar-width: thin;
+}
+.related-grid.is-carousel .related-card { flex: 0 0 210px; scroll-snap-align: start; }
+
+.carousel-nav {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 6px 16px rgba(46,7,11,0.18);
+}
+.carousel-nav:hover { background: var(--accent-hover); transform: scale(1.08); }
+.carousel-nav:active { transform: scale(0.95); }
+
+.related-card { background: #FFF3DC; border-radius: 20px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; animation: fadeInUp 0.4s ease both; }
 .related-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(46,7,11,0.14); }
 .related-card img { width: 100%; height: 200px; object-fit: cover; display: block; background: #EADFC0; transition: transform 0.3s; }
 .related-card:hover img { transform: scale(1.06); }
@@ -425,7 +503,7 @@ svg { display: block; }
 .cart-empty p { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 20px; color: var(--accent); margin-bottom: 22px; }
 .cart-layout { display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start; }
 .cart-items { flex: 2; min-width: 320px; display: flex; flex-direction: column; gap: 16px; }
-.cart-item { display: flex; align-items: center; gap: 18px; background: #FFF3DC; border-radius: 18px; padding: 16px; }
+.cart-item { display: flex; align-items: center; gap: 18px; background: #FFF3DC; border-radius: 18px; padding: 16px; animation: fadeInUp 0.4s ease both; }
 .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; background: #EADFC0; flex-shrink: 0; }
 .cart-item-info { flex: 1; min-width: 120px; }
 .cart-item-info .name { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 15px; }
@@ -513,6 +591,12 @@ svg { display: block; }
   .shop-sidebar { width: 100%; }
   .product-gallery img { height: 320px; }
   .product-info h1 { font-size: 26px; }
+
+  /* Related-products carousel: drop the nav arrows on touch screens (swipe
+     does the job) and let each card peek so it reads as scrollable. */
+  .carousel-nav { display: none; }
+  .related-grid.is-carousel { scroll-snap-type: x mandatory; }
+  .related-grid.is-carousel .related-card { flex: 0 0 70%; }
 
   .footer-grid { gap: 32px; }
   .site-footer { padding: 44px 20px 24px; }

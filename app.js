@@ -12,6 +12,8 @@
   const ICON_MENU = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
   const ICON_CLOSE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
   const ICON_SEARCH = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  const ICON_CHEVRON_LEFT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+  const ICON_CHEVRON_RIGHT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
 
   const app = document.getElementById('app');
 
@@ -165,22 +167,35 @@
   }
 
   // ---- Cart logic ----
+  function bumpCartIcon() {
+    const btn = document.querySelector('.cart-btn');
+    if (!btn) return;
+    btn.classList.remove('bump');
+    // Force reflow so re-adding the class restarts the animation even if it's still running.
+    void btn.offsetWidth;
+    btn.classList.add('bump');
+  }
+
   function addToCart(id, qty) {
     const product = state.products.find((p) => p.id === id);
     const maxStock = product ? product.stock : 0;
-    const next = Math.min(maxStock, (state.cart[id] || 0) + (qty || 1));
+    const prev = state.cart[id] || 0;
+    const next = Math.min(maxStock, prev + (qty || 1));
     if (next <= 0) delete state.cart[id]; else state.cart[id] = next;
     saveCart();
     render();
+    if (next > prev) bumpCartIcon();
   }
 
   function changeCartQty(id, delta) {
     const product = state.products.find((p) => p.id === id);
     const maxStock = product ? product.stock : 0;
-    const nq = Math.min(maxStock, (state.cart[id] || 0) + delta);
+    const prev = state.cart[id] || 0;
+    const nq = Math.min(maxStock, prev + delta);
     if (nq <= 0) delete state.cart[id]; else state.cart[id] = nq;
     saveCart();
     render();
+    if (nq > prev) bumpCartIcon();
   }
 
   function removeFromCart(id) {
@@ -492,8 +507,17 @@
     }
 
     const sameCategory = allProducts.filter((p) => p.category === currentProduct.category && p.id !== currentProduct.id);
-    const otherCategory = allProducts.filter((p) => p.category !== currentProduct.category && p.id !== currentProduct.id);
-    const related = [...sameCategory, ...otherCategory].slice(0, 4);
+    let related;
+    let relatedIsCarousel;
+    if (sameCategory.length >= 4) {
+      // Enough same-category items to make scrolling worthwhile.
+      related = sameCategory.slice(0, 16);
+      relatedIsCarousel = true;
+    } else {
+      const otherCategory = allProducts.filter((p) => p.category !== currentProduct.category && p.id !== currentProduct.id);
+      related = [...sameCategory, ...otherCategory].slice(0, 4);
+      relatedIsCarousel = false;
+    }
 
     return `
       <main class="product-main">
@@ -528,16 +552,20 @@
         ${related.length > 0 ? `
           <div class="related-block">
             <h2>Tu aimeras aussi</h2>
-            <div class="related-grid">
-              ${related.map((p) => `
-                <div class="related-card" data-action="open-product" data-id="${p.id}">
-                  <img src="${esc(p.imageSrc)}" alt="${esc(p.name)}" />
-                  <div class="body">
-                    <div class="name">${esc(p.name)}</div>
-                    <div class="price">${p.priceLabel}</div>
+            <div class="carousel-wrap">
+              ${relatedIsCarousel ? `<button class="carousel-nav prev" data-action="carousel-scroll" data-dir="-1" aria-label="Précédent">${ICON_CHEVRON_LEFT}</button>` : ''}
+              <div class="related-grid ${relatedIsCarousel ? 'is-carousel' : ''}" id="related-carousel">
+                ${related.map((p) => `
+                  <div class="related-card" data-action="open-product" data-id="${p.id}">
+                    <img src="${esc(p.imageSrc)}" alt="${esc(p.name)}" />
+                    <div class="body">
+                      <div class="name">${esc(p.name)}</div>
+                      <div class="price">${p.priceLabel}</div>
+                    </div>
                   </div>
-                </div>
-              `).join('')}
+                `).join('')}
+              </div>
+              ${relatedIsCarousel ? `<button class="carousel-nav next" data-action="carousel-scroll" data-dir="1" aria-label="Suivant">${ICON_CHEVRON_RIGHT}</button>` : ''}
             </div>
           </div>
         ` : ''}
@@ -669,6 +697,15 @@
       case 'cart-dec': changeCartQty(id, -1); break;
       case 'cart-remove': removeFromCart(id); break;
       case 'open-lightbox': openLightbox(el.dataset.src, el.dataset.alt); break;
+      case 'carousel-scroll': {
+        const track = document.getElementById('related-carousel');
+        if (track) {
+          const card = track.querySelector('.related-card');
+          const step = card ? card.getBoundingClientRect().width + 18 : track.clientWidth * 0.8;
+          track.scrollBy({ left: step * Number(el.dataset.dir), behavior: 'smooth' });
+        }
+        break;
+      }
     }
   });
 
