@@ -385,7 +385,7 @@
     const s = state.settings;
     const allProducts = state.products.map(enrich);
     const featured = allProducts.slice(0, 4);
-    const categoryCards = state.categories.map((c) => `
+    const categoryCards = state.categories.filter((c) => !c.parentSlug).map((c) => `
       <div class="category-card" data-action="go-shop-cat" data-cat="${esc(c.slug)}">
         <div class="category-badge">${esc(c.initial)}</div>
         <div class="category-label">${esc(c.label)}</div>
@@ -453,18 +453,42 @@
 
   function renderShop() {
     const allProducts = state.products.map(enrich);
+
+    // A parent category also matches products filed under any of its sub-categories.
+    const childrenOf = (slug) => state.categories.filter((c) => c.parentSlug === slug).map((c) => c.slug);
+    const matchSlugs = state.category === 'all' ? null : [state.category, ...childrenOf(state.category)];
+
     let filtered = allProducts.filter((p) =>
-      (state.category === 'all' || p.category === state.category) &&
+      (!matchSlugs || matchSlugs.includes(p.category)) &&
       p.name.toLowerCase().includes(state.search.toLowerCase())
     );
     if (state.sort === 'price-asc') filtered = [...filtered].sort((a, b) => a.price - b.price);
     else if (state.sort === 'price-desc') filtered = [...filtered].sort((a, b) => b.price - a.price);
     else if (state.sort === 'name') filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
 
-    const sidebarCats = [{ slug: 'all', label: 'Toutes les catégories' }, ...state.categories];
-    const sidebarHtml = sidebarCats.map((c) => {
+    // Sidebar shows top-level categories only; the active one (or the parent of
+    // the active sub-category) expands to reveal its own sub-categories inline.
+    const activeCat = state.categories.find((c) => c.slug === state.category);
+    const expandedParent = activeCat ? (activeCat.parentSlug || activeCat.slug) : null;
+    const topCats = [{ slug: 'all', label: 'Toutes les catégories' }, ...state.categories.filter((c) => !c.parentSlug)];
+    const sidebarHtml = topCats.map((c) => {
       const isActive = c.slug === state.category;
-      return `<span data-action="go-shop-cat" data-cat="${esc(c.slug)}" style="font-weight:${isActive ? 700 : 500};background:${isActive ? '#3A0A10' : 'transparent'};color:${isActive ? '#FBC873' : '#3A0A10'};">${esc(c.label)}</span>`;
+      const children = childrenOf(c.slug);
+      const childrenHtml = (children.length && c.slug === expandedParent) ? `
+        <div class="sidebar-subcats">
+          ${children.map((slug) => {
+            const child = state.categories.find((x) => x.slug === slug);
+            const childActive = slug === state.category;
+            return `<span data-action="go-shop-cat" data-cat="${esc(slug)}" class="${childActive ? 'active' : ''}">${esc(child.label)}</span>`;
+          }).join('')}
+        </div>
+      ` : '';
+      return `
+        <div class="sidebar-cat-group">
+          <span data-action="go-shop-cat" data-cat="${esc(c.slug)}" class="${isActive ? 'active' : ''}">${esc(c.label)}</span>
+          ${childrenHtml}
+        </div>
+      `;
     }).join('');
 
     return `
