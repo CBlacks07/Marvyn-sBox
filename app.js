@@ -363,7 +363,7 @@
   function productCard(p) {
     return `
       <div class="product-card" data-action="open-product" data-id="${p.id}">
-        <div class="product-media">
+        <div class="product-media img-pop">
           <img src="${esc(p.imageSrc)}" alt="${esc(p.name)}" />
           ${p.badge ? `<span class="product-badge-tag" style="background:${p.badgeColor};">${esc(p.badge)}</span>` : ''}
         </div>
@@ -434,7 +434,7 @@
             <p>${esc(s.promoText)}</p>
             <button class="btn btn-dark" data-action="go-home-box" style="padding:15px 30px;font-size:16px;">${esc(s.promoButtonLabel)}</button>
           </div>
-          <div class="promo-media">
+          <div class="promo-media img-pop">
             <img src="${esc(promoImg)}" alt="${esc(s.promoTitle)}" />
           </div>
         </section>
@@ -581,7 +581,7 @@
               ${showCarouselNav ? `<button class="carousel-nav prev" data-action="carousel-scroll" data-dir="-1" aria-label="Précédent">${ICON_CHEVRON_LEFT}</button>` : ''}
               <div class="related-grid is-carousel" id="related-carousel">
                 ${related.map((p) => `
-                  <div class="related-card" data-action="open-product" data-id="${p.id}">
+                  <div class="related-card img-pop" data-action="open-product" data-id="${p.id}">
                     <img src="${esc(p.imageSrc)}" alt="${esc(p.name)}" />
                     <div class="body">
                       <div class="name">${esc(p.name)}</div>
@@ -800,9 +800,27 @@
     });
   }, { threshold: 0.15 }) : null;
   function setupScrollReveal() {
-    if (!revealObserver) { document.querySelectorAll('.reveal').forEach((el) => el.classList.add('in-view')); return; }
-    document.querySelectorAll('.reveal:not(.in-view)').forEach((el) => revealObserver.observe(el));
+    if (!revealObserver) {
+      document.querySelectorAll('.reveal, .img-pop').forEach((el) => el.classList.add('in-view'));
+      return;
+    }
+    document.querySelectorAll('.reveal:not(.in-view), .img-pop:not(.in-view)').forEach((el) => revealObserver.observe(el));
   }
+
+  // ---- Button tap/click ripple (visual feedback on desktop click + mobile tap) ----
+  document.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest('.btn');
+    if (!btn || btn.disabled) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const ripple = document.createElement('span');
+    ripple.className = 'btn-ripple';
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+  });
 
   // ---- "Les plus demandés" — gentle auto-scroll, mobile only ----
   let featuredAutoPaused = false;
