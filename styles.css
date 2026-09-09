@@ -125,6 +125,7 @@ svg { display: block; }
   background: transparent;
   outline: none;
   flex: 1;
+  min-width: 0; /* let the input shrink below its default intrinsic width instead of overflowing the pill and hiding under the cart button on narrow screens */
   font-family: 'Poppins', sans-serif;
   font-size: 14px;
   color: var(--dark);
@@ -553,7 +554,7 @@ main { animation: fadeIn 0.35s ease both; }
 .cart-qty { display: flex; align-items: center; background: var(--bg); border-radius: 999px; padding: 4px; }
 .cart-qty button { width: 28px; height: 28px; border: none; background: transparent; font-size: 16px; font-weight: 700; color: var(--dark); cursor: pointer; }
 .cart-qty span { width: 26px; text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 14px; }
-.line-total { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 15px; color: var(--accent); width: 80px; text-align: right; }
+.line-total { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 15px; color: var(--accent); min-width: 80px; white-space: nowrap; text-align: right; }
 .remove-link { cursor: pointer; color: #8a5a2c; font-size: 13px; }
 
 .cart-summary { flex: 1; min-width: 280px; background: #FFF3DC; border-radius: 20px; padding: 26px; }
